@@ -1,0 +1,13 @@
+spring.profiles.active: local
+spring:
+  profiles:
+    include:
+
+---
+spring.config.activate.on-profile: local
+server:
+  port: 8080
+logging:
+  level:
+    com.revy: debug
+

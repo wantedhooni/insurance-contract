@@ -1,0 +1,5 @@
+rootProject.name = 'insurance_contract_management'
+
+include(
+        ':api-server',
+)
