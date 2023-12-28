@@ -37,7 +37,7 @@ public class MainController {
 
 
     // 1. 계약 생성 API
-    @PostMapping
+    @PostMapping("/create")
     public void createContract() {
 
     }
@@ -48,13 +48,13 @@ public class MainController {
 
     }
 
-    @PostMapping
+//    @PostMapping("/modify")
     // 3. 계약 정보 수정 API
     public void modifyContract() {
 
     }
 
-    @PostMapping
+//    @PostMapping("/calc")
     //4. 예상 총 보험료 계약 API
     public void calcContract() {
 

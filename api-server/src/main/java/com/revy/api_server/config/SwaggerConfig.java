@@ -12,8 +12,8 @@ import org.springframework.context.annotation.Configuration;
  * Swagger 설정
  */
 @OpenAPIDefinition(
-        info = @Info(title = "블로그 검색 API",
-                description = "블로그 검색 API",
+        info = @Info(title = "보험 계약 API",
+                description = "보험 계약 API",
                 version = "v1"))
 @Configuration
 public class SwaggerConfig {
@@ -24,7 +24,7 @@ public class SwaggerConfig {
 
 
         return GroupedOpenApi.builder()
-                .group("블로그 검색 API")
+                .group("보험 계약 API")
                 .pathsToMatch(paths)
                 .build();
     }
