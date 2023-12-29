@@ -1,4 +1,4 @@
-package com.revy.api_server.config;
+package com.revy.api_server.infra.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
