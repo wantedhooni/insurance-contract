@@ -1,13 +1,12 @@
 package com.revy.api_server.app.controller;
 
+import com.revy.api_server.app.controller.dto.request.CalcTotalAmountReq;
 import com.revy.api_server.app.controller.dto.request.CreateContractReq;
-import com.revy.api_server.app.controller.dto.request.RetrieveContractReq;
-import com.revy.api_server.app.controller.dto.response.CreateContractRes;
-import com.revy.api_server.app.controller.dto.response.RetrieveContractRes;
+import com.revy.api_server.app.controller.dto.response.CalcTotalAmountRes;
+import com.revy.api_server.app.controller.dto.response.ContractInfoRes;
 import com.revy.api_server.app.service.ContractService;
-import com.revy.api_server.app.service.dto.ContractCreateParamDto;
-import com.revy.api_server.app.service.dto.ContractCreateResultDto;
-import com.revy.api_server.app.service.dto.ContractRetrieveResultDto;
+import com.revy.api_server.app.service.dto.CalcTotalAmountResultDto;
+import com.revy.api_server.app.service.dto.ContractResultDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -41,23 +40,38 @@ public class ContractController {
 상품 / 담보 정보와 계약기간을 통해서 예상되는 보험료를 리턴합니다.
  */
 
+    //
 
-    /*
-    1. 계약 생성 API
-    최초 계약 생성시 상태는 정상계약으로 간주합니다.
-    총 보험료는 계약 생성시점에 서버에서 계산합니다.
+    /**
+     * 예상 총 보험료 계약 API
+     *
+     * @param req
+     * @return ContractInfoRes
+     */
+    @PostMapping("/calc")
+    public CalcTotalAmountRes calcContract(@Valid @RequestBody CalcTotalAmountReq req) {
+        CalcTotalAmountResultDto resultDto = contractService.calcContract(req.toCalcTotalAmountParamDto());
+        return CalcTotalAmountRes.from(resultDto);
+    }
+
+    /**
+     * 계약 생성 API
+     * - 최초 계약 생성시 상태는 정상계약으로 간주합니다.
+     * - 총 보험료는 계약 생성시점에 서버에서 계산합니다.
+     * @param req
+     * @return
      */
     @PostMapping("/create")
-    public CreateContractRes createContract(@Valid @RequestBody CreateContractReq req) {
-        ContractCreateResultDto resultDto = contractService.createContract(req.toContractCreateParamDto());
-        return CreateContractRes.from(resultDto);
+    public ContractInfoRes createContract(@Valid @RequestBody CreateContractReq req) {
+        ContractResultDto resultDto = contractService.createContract(req.toContractCreateParamDto());
+        return ContractInfoRes.from(resultDto);
     }
 
     // 2. 계약 정보 조회 API
-    @GetMapping
-    public RetrieveContractRes retrieveContract(RetrieveContractReq req) {
-        ContractRetrieveResultDto resultDto = contractService.retrieveContract(req.toContractRetrieveParamDto());
-        return RetrieveContractRes.from(resultDto);
+    @GetMapping("/{contractNo}")
+    public ContractInfoRes retrieveContract(@PathVariable("contractNo") String contractNo) {
+        ContractResultDto resultDto = contractService.retrieveContract(contractNo);
+        return ContractInfoRes.from(resultDto);
     }
 
 
@@ -67,11 +81,5 @@ public class ContractController {
 
     }
 
-
-    //4. 예상 총 보험료 계약 API
-    @PostMapping("/calc")
-    public void calcContract() {
-
-    }
 }
 

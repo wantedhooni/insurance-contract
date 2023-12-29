@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,22 +58,26 @@ public class Contract {
     @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
 
+    // 계약 일시
+    @Column(name = "contracted", nullable = false)
+    private LocalDateTime contracted;
+
     @OneToMany(mappedBy = "contract", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     // 가입담보 List
     private List<ContractCollateral> contractCollaterals = new ArrayList<>();
 
     @Builder
-    public Contract(String contractNo, ContractStatus status, InsuranceProduct insuranceProduct, List<ContractCollateral> contractCollaterals, Integer contractPeriod, LocalDate startDate, LocalDate endDate, BigDecimal totalAmount) {
+    public Contract(String contractNo, ContractStatus status, InsuranceProduct insuranceProduct, Integer contractPeriod, LocalDate startDate, LocalDate endDate, BigDecimal totalAmount, LocalDateTime contracted, List<ContractCollateral> contractCollaterals) {
         this.contractNo = contractNo;
         this.status = status;
         this.insuranceProduct = insuranceProduct;
-        this.contractCollaterals = contractCollaterals;
         this.contractPeriod = contractPeriod;
         this.startDate = startDate;
         this.endDate = endDate;
         this.totalAmount = totalAmount;
+        this.contracted = contracted;
+        this.contractCollaterals = contractCollaterals;
     }
-
 
     public void setContractCollaterals(List<ContractCollateral> contractCollaterals) {
         this.contractCollaterals = contractCollaterals;

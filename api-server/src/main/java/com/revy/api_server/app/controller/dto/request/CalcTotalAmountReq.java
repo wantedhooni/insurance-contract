@@ -1,6 +1,7 @@
 package com.revy.api_server.app.controller.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.revy.api_server.app.service.dto.CalcTotalAmountParamDto;
 import com.revy.api_server.app.service.dto.ContractCreateParamDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -19,7 +20,7 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor
 @ToString
-public class CreateContractReq {
+public class CalcTotalAmountReq {
 
     // 상품 코드
     @JsonProperty("productCode")
@@ -41,8 +42,8 @@ public class CreateContractReq {
     @NotNull(message = "계약 시작일은 필수값입니다.")
     private LocalDate startDate;
 
-    public ContractCreateParamDto toContractCreateParamDto() {
-        return ContractCreateParamDto
+    public CalcTotalAmountParamDto toCalcTotalAmountParamDto() {
+        return CalcTotalAmountParamDto
                 .builder()
                 .productCode(this.productCode)
                 .collateralCodes(this.collateralCodes)

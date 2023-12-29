@@ -22,28 +22,24 @@ public class InsuranceCollateral {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 담보 코드
     @Comment("담보 코드")
     @Column(name = "code", unique = true, nullable = false)
     private String code;
 
-    // 상위 상품
     @ManyToOne
     @Comment("상품 코드")
     @JoinColumn(name = "insurance_product_code", referencedColumnName = "code")
     private InsuranceProduct insuranceProduct;
 
-    // 담보명
+
     @Comment("담보명")
     @Column(name = "name", nullable = false)
     private String name;
 
-    // 가입 금액
     @Comment("가입 금액")
     @Column(name = "subscription_amount", nullable = false, scale = 3)
     private BigDecimal subscriptionAmount;
 
-    // 기준 금액
     @Comment("기준 금액")
     @Column(name = "standard_amount", nullable = false, scale = 3)
     private BigDecimal standardAmount;

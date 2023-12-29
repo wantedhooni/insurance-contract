@@ -28,7 +28,6 @@ public class ContractCollateral {
     @JoinColumn(name = "contract_code", referencedColumnName = "contract_no", nullable = false)
     private Contract contract;
 
-
     @Comment("상품 Code")
     @ManyToOne
     @JoinColumn(name = "insurance_product_code", referencedColumnName = "code", nullable = false)
@@ -38,7 +37,6 @@ public class ContractCollateral {
     @ManyToOne
     @JoinColumn(name = "insurance_collateral_code", referencedColumnName = "code", nullable = false)
     private InsuranceCollateral insuranceCollateral;
-
 
     @Comment("가입 금액")
     private BigDecimal subscriptionAmount;

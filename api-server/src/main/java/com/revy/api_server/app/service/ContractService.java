@@ -10,16 +10,16 @@ public interface ContractService {
     /**
      * 보험 계약을 생성한다.
      * @param contractCreateParamDto
-     * @return ContractCreateParamDto
+     * @return ContractResultDto
      */
-    ContractCreateResultDto createContract(ContractCreateParamDto contractCreateParamDto);
+    ContractResultDto createContract(ContractCreateParamDto contractCreateParamDto);
 
     /**
-     * 보험 계약을 조회한다.
-     * @param contractRetrieveParamDto
-     * @return ContractRetrieveParamDto
+     * 보험 계약 정보를 조회한다.
+     * @param contractNo
+     * @return ContractResultDto
      */
-    ContractRetrieveResultDto retrieveContract(ContractRetrieveParamDto contractRetrieveParamDto);
+    ContractResultDto retrieveContract(String contractNo);
 
     /**
      * 보험 계약을 수정한다.
@@ -30,8 +30,8 @@ public interface ContractService {
 
     /**
      * 보험료를 계산한다.
-     * @param contractCalcParamDto
+     * @param contractCreateParamDto
      * @return ContractCalcParamDto
      */
-    ContractCalcResultDto calcContract(ContractCalcParamDto contractCalcParamDto);
+    CalcTotalAmountResultDto calcContract(CalcTotalAmountParamDto contractCreateParamDto);
 }
