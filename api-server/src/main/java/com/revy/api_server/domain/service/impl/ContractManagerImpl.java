@@ -1,5 +1,6 @@
 package com.revy.api_server.domain.service.impl;
 
+import com.revy.api_server.domain.entity.Contract;
 import com.revy.api_server.domain.repository.ContractRepository;
 import com.revy.api_server.domain.service.ContractManager;
 import lombok.RequiredArgsConstructor;
@@ -15,4 +16,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ContractManagerImpl implements ContractManager {
     private final ContractRepository repository;
+
+    @Override
+    public Contract save(Contract contract){
+        return repository.save(contract);
+    }
 }
