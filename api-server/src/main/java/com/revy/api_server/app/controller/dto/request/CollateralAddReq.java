@@ -17,4 +17,8 @@ public class CollateralAddReq {
     @JsonProperty("collateralCodes")
     @NotEmpty(message = "담보코드는 필수값입니다.")
     private Set<String> collateralCodes;
+
+    public CollateralAddReq(Set<String> collateralCodes) {
+        this.collateralCodes = collateralCodes;
+    }
 }

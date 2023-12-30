@@ -16,4 +16,8 @@ public class ContractModifyPeriodReq {
     @JsonProperty("contractPeriod")
     @NotNull(message = "계약기간은 필수값입니다.")
     private Integer contractPeriod;
+
+    public ContractModifyPeriodReq(Integer contractPeriod) {
+        this.contractPeriod = contractPeriod;
+    }
 }

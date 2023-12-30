@@ -6,6 +6,7 @@ import com.revy.api_server.app.service.dto.ContractCreateParamDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -50,5 +51,13 @@ public class CalcTotalAmountReq {
                 .contractPeriod(this.contractPeriod)
                 .startDate(this.startDate)
                 .build();
+    }
+
+    @Builder
+    public CalcTotalAmountReq(String productCode, Set<String> collateralCodes, Integer contractPeriod, LocalDate startDate) {
+        this.productCode = productCode;
+        this.collateralCodes = collateralCodes;
+        this.contractPeriod = contractPeriod;
+        this.startDate = startDate;
     }
 }
