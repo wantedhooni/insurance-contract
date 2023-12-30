@@ -21,3 +21,14 @@ dependencies {
 bootJar {
     enabled = true
 }
+
+def querydslDir = "$buildDir/generated"
+
+
+sourceSets {
+    main.java.srcDir querydslDir
+}
+
+configurations {
+    querydsl.extendsFrom compileClasspath
+}
