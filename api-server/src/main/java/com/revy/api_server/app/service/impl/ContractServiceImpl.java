@@ -79,7 +79,7 @@ public class ContractServiceImpl implements ContractService {
         log.debug("now:{}, startDate:{}, endDate:{}", now, contractCreateParamDto.getStartDate(), endDate);
 
         // TODO:LEVI - 계약시작일이 과거 일수 있는지는 아직 잘 모르겠음. 우선 계약 시작일이 현재보다 과거이면 막는다.
-        if (now.isBefore(contractCreateParamDto.getStartDate())) {
+        if (contractCreateParamDto.getStartDate().isBefore(now)) {
             throw new ValidationException(ErrorCode.BAD_REQUEST, "계약 시작일은 금일보다 과거일 수 없습니다.. 요청값: %s".formatted(contractCreateParamDto.getStartDate()));
         }
 
@@ -144,7 +144,7 @@ public class ContractServiceImpl implements ContractService {
         log.debug("now:{}, startDate:{}, endDate:{}", now, calcTotalAmountParamDto.getStartDate(), endDate);
 
         // TODO:LEVI - 계약시작일이 과거 일수 있는지는 아직 잘 모르겠음. 우선 계약 시작일이 현재보다 과거이면 막는다.
-        if (now.isBefore(calcTotalAmountParamDto.getStartDate())) {
+        if (calcTotalAmountParamDto.getStartDate().isBefore(now)) {
             throw new ValidationException(ErrorCode.BAD_REQUEST, "계약 시작일은 금일보다 과거일 수 없습니다.. 요청값: %s".formatted(calcTotalAmountParamDto.getStartDate()));
         }
 
