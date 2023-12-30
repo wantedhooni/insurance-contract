@@ -21,19 +21,6 @@ public class ContractController {
 
     private final ContractService contractService;
 
-/*
-2. 계약정보 조회 API
-계약정보를 전달받아서 해당 계약의 상세 내용을 리턴합니다.
-
-3. 계약 정보 수정 API
-
-4. 예상 총 보험료 계약 API
-보험 가입 전 보험료를 미리 산출해 보기 위한 기능입니다.
-상품 / 담보 정보와 계약기간을 통해서 예상되는 보험료를 리턴합니다.
- */
-
-    //
-
     /**
      * 예상 총 보험료 계약 API
      *
@@ -73,18 +60,7 @@ public class ContractController {
     }
 
     /**
-     * 계약 정보 수정 API
-     * 해당 계약에 대해서 계약내용 변경 업무를 수행합니다.
-     * 총 보험료는 계약 생성시점에 서버에서 계산합니다.
-     * 변경 가능한 정보는 다음과 같습니다.
-     * - 담보 추가 / 삭제
-     * - 계약기간 변경(시작일은 변경 불가, 기간만 변경 가능)
-     * - 계약상태 변경(단, 기간만료 상태에서는 변경 불가)
-     */
-
-
-    /**
-     * 계약 담보 추가
+     * 계약 담보 추가 API
      */
     @PostMapping("/{contractNo}/collateral/add")
     public ContractInfoRes addCollateral(@PathVariable("contractNo") String contractNo,
@@ -97,7 +73,7 @@ public class ContractController {
 
 
     /**
-     * 계약 담보 제거
+     * 계약 담보 제거 API
      */
     @PostMapping("/{contractNo}/collateral/remove")
     public ContractInfoRes removeCollateral(@PathVariable("contractNo") String contractNo,
@@ -108,9 +84,10 @@ public class ContractController {
     }
 
     /**
-     * 계약기간 변경
+     * 계약기간 변경 API
      *
      * @param contractNo
+     * @param req
      * @return
      */
     @PostMapping("/{contractNo}/modify/period")
@@ -122,7 +99,11 @@ public class ContractController {
     }
 
     /**
-     * 계약 청약철회
+     * 계약 청약철회 API
+     *
+     * @param contractNo
+     * @param req
+     * @return
      */
     @PostMapping("/{contractNo}/withdrawal")
     public ContractInfoRes withdrawalContract(@PathVariable("contractNo") String contractNo,
