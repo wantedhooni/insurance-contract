@@ -1,26 +1,26 @@
 -- 상품 DATA
-INSERT INTO contract.insurance_product
+INSERT INTO insurance_product
     (id, code, name, contract_period_min, contract_period_max)
 VALUES (1, 'FAA001', '여행자 보험', 1, 3),
        (2, 'FAO004', '휴대폰 보험', 1, 12)
 ;
 
 -- 상품 담보 - 여행자 보험 -  목록 DATA
-INSERT INTO contract.insurance_collateral
+INSERT INTO insurance_collateral
 (code, name, insurance_product_code, standard_amount, subscription_amount)
 VALUES ('FAA001_1', '상해치료비', 'FAA001', 100, 1000000),
        ('FAA001_2', '항공기 지연도착시 보상금', 'FAA001', 100, 500000)
 ;
 
 -- 상품 담보 - 휴대폰 보험 -  목록 DATA
-INSERT INTO contract.insurance_collateral
+INSERT INTO insurance_collateral
 (code, name, insurance_product_code, standard_amount, subscription_amount)
 VALUES ('FAO004_1', '부분손실', 'FAO004', 38, 750000),
        ('FAO004_2', '전체손실', 'FAO004', 40, 1570000)
 ;
 
 -- 계약 DATA
-INSERT INTO contract.contract (contract_period,end_date,start_date,total_amount,contracted,expired,withdrawn,contract_no,insurance_product_code,status,withdrawal_reason) VALUES
+INSERT INTO contract (contract_period,end_date,start_date,total_amount,contracted,expired,withdrawn,contract_no,insurance_product_code,status,withdrawal_reason) VALUES
 (1,'2024-01-30','2023-12-30',10000.00,'2023-12-30 17:32:05.15491',NULL,NULL,'74bbddf6-5ef8-46ef-84ea-c79b9a60a24f','FAA001','NORMAL',NULL),
 (3,'2024-03-30','2023-12-30',45000.00,'2023-12-30 17:32:14.152431',NULL,NULL,'8a7f1235-dcfe-4b44-b041-d95b0d0166bf','FAA001','NORMAL',NULL),
 (1,'2024-01-30','2023-12-30',19736.84,'2023-12-30 17:32:21.590543',NULL,NULL,'8b5f8772-42bd-45f9-b243-3f79e5e3b59b','FAO004','NORMAL',NULL),
@@ -30,7 +30,7 @@ INSERT INTO contract.contract (contract_period,end_date,start_date,total_amount,
 
 
 -- 계약 담보 DATA
-INSERT INTO contract.contract_collateral (standard_amount,subscription_amount,contract_code,insurance_collateral_code,insurance_product_code) VALUES
+INSERT INTO contract_collateral (standard_amount,subscription_amount,contract_code,insurance_collateral_code,insurance_product_code) VALUES
 (100.00,1000000.00,'74bbddf6-5ef8-46ef-84ea-c79b9a60a24f','FAA001_1','FAA001'),
 (100.00,1000000.00,'8a7f1235-dcfe-4b44-b041-d95b0d0166bf','FAA001_1','FAA001'),
 (100.00,500000.00,'8a7f1235-dcfe-4b44-b041-d95b0d0166bf','FAA001_2','FAA001'),
