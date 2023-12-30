@@ -1,11 +1,10 @@
-# 20231221-wrh
-
+# 보험 계약 시스템
 
 ## 인프라 정보
 
 ---
-Swagger URL: http://localhost:8080/swagger-ui/index.html
-H2DB URL: http://localhost:8080/h2-console/
+- Swagger URL: http://localhost:8080/swagger-ui/index.html
+- H2DB URL: http://localhost:8080/h2-console/
 
 ## SPEC
 
@@ -71,6 +70,7 @@ gradle bootrun
 
 ---
 ![api_desc.png](img%2Fapi_desc.png)
-POSTMAN 퍼블리싱 URL : https://documenter.getpostman.com/view/31149172/2s9YsDjaQB#0b8fb3bb-176f-4e94-92c4-b493e16db9f7
+
+- API 정보 URL(Postman Doc): https://documenter.getpostman.com/view/31149172/2s9YsDjaQB#0b8fb3bb-176f-4e94-92c4-b493e16db9f7
 
 
