@@ -14,7 +14,6 @@ import com.revy.api_server.domain.entity.Contract;
 import com.revy.api_server.domain.entity.ContractCollateral;
 import com.revy.api_server.domain.entity.InsuranceCollateral;
 import com.revy.api_server.domain.entity.InsuranceProduct;
-import com.revy.api_server.domain.service.ContractCollateralManager;
 import com.revy.api_server.domain.service.ContractManager;
 import com.revy.api_server.domain.service.InsuranceProductManager;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +44,6 @@ import java.util.stream.Collectors;
 public class ContractServiceImpl implements ContractService {
 
     private final ContractManager contractManager;
-    private final ContractCollateralManager contractCollateralManager;
     private final InsuranceProductManager insuranceProductManager;
 
 
@@ -67,12 +65,12 @@ public class ContractServiceImpl implements ContractService {
 
         // 기간 최소값 Valid
         if (insuranceProduct.getContractPeriodMin() > contractCreateParamDto.getContractPeriod()) {
-            throw new NotFoundException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 최소 기간은 %s 입니다. 요청값: %s".formatted(contractCreateParamDto.getProductCode(), insuranceProduct.getContractPeriodMin(), contractCreateParamDto.getContractPeriod()));
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 최소 기간은 %s 입니다. 요청값: %s".formatted(contractCreateParamDto.getProductCode(), insuranceProduct.getContractPeriodMin(), contractCreateParamDto.getContractPeriod()));
         }
 
         // 기간 최대값 Valid
         if (insuranceProduct.getContractPeriodMax() < contractCreateParamDto.getContractPeriod()) {
-            throw new NotFoundException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 최대 기간은 %s 입니다. 요청값: %s".formatted(contractCreateParamDto.getProductCode(), insuranceProduct.getContractPeriodMax(), contractCreateParamDto.getContractPeriod()));
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 최대 기간은 %s 입니다. 요청값: %s".formatted(contractCreateParamDto.getProductCode(), insuranceProduct.getContractPeriodMax(), contractCreateParamDto.getContractPeriod()));
         }
 
         // 시작일 Check
@@ -82,7 +80,7 @@ public class ContractServiceImpl implements ContractService {
 
         // TODO:LEVI - 계약시작일이 과거 일수 있는지는 아직 잘 모르겠음. 우선 계약 시작일이 현재보다 과거이면 막는다.
         if (now.isBefore(contractCreateParamDto.getStartDate())) {
-            throw new NotFoundException(ErrorCode.BAD_REQUEST, "계약 시작일은 금일보다 과거일 수 없습니다.. 요청값: %s".formatted(contractCreateParamDto.getStartDate()));
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "계약 시작일은 금일보다 과거일 수 없습니다.. 요청값: %s".formatted(contractCreateParamDto.getStartDate()));
         }
 
         // 총보험료 계산
@@ -132,12 +130,12 @@ public class ContractServiceImpl implements ContractService {
 
         // 기간 최소값 Valid
         if (insuranceProduct.getContractPeriodMin() > calcTotalAmountParamDto.getContractPeriod()) {
-            throw new NotFoundException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 최소 기간은 %s 입니다. 요청값: %s".formatted(calcTotalAmountParamDto.getProductCode(), insuranceProduct.getContractPeriodMin(), calcTotalAmountParamDto.getContractPeriod()));
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 최소 기간은 %s 입니다. 요청값: %s".formatted(calcTotalAmountParamDto.getProductCode(), insuranceProduct.getContractPeriodMin(), calcTotalAmountParamDto.getContractPeriod()));
         }
 
         // 기간 최대값 Valid
         if (insuranceProduct.getContractPeriodMax() < calcTotalAmountParamDto.getContractPeriod()) {
-            throw new NotFoundException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 최대 기간은 %s 입니다. 요청값: %s".formatted(calcTotalAmountParamDto.getProductCode(), insuranceProduct.getContractPeriodMax(), calcTotalAmountParamDto.getContractPeriod()));
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 최대 기간은 %s 입니다. 요청값: %s".formatted(calcTotalAmountParamDto.getProductCode(), insuranceProduct.getContractPeriodMax(), calcTotalAmountParamDto.getContractPeriod()));
         }
 
         // 시작일 Check
@@ -147,7 +145,7 @@ public class ContractServiceImpl implements ContractService {
 
         // TODO:LEVI - 계약시작일이 과거 일수 있는지는 아직 잘 모르겠음. 우선 계약 시작일이 현재보다 과거이면 막는다.
         if (now.isBefore(calcTotalAmountParamDto.getStartDate())) {
-            throw new NotFoundException(ErrorCode.BAD_REQUEST, "계약 시작일은 금일보다 과거일 수 없습니다.. 요청값: %s".formatted(calcTotalAmountParamDto.getStartDate()));
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "계약 시작일은 금일보다 과거일 수 없습니다.. 요청값: %s".formatted(calcTotalAmountParamDto.getStartDate()));
         }
 
         // 총보험료 계산
@@ -238,16 +236,33 @@ public class ContractServiceImpl implements ContractService {
         Assert.notNull(contractNo, "contractPeriod must not be empty.");
         Contract requestContract = getOneByContractNo(contractNo);
 
-        // 수정 상태 확인
+        // 수정 상태 Valid
         if (requestContract.getStatus() != ContractStatus.NORMAL) {
             throw new ValidationException(ErrorCode.BAD_REQUEST, "계약기간 수정은 '정상 계약' 상태에서 가능합니다.");
+        }
+
+        InsuranceProduct insuranceProduct = requestContract.getInsuranceProduct();
+
+        // 기간 최소값 Valid
+        if (insuranceProduct.getContractPeriodMin() > contractPeriod) {
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 최소 기간은 %s 입니다. 요청값: %s".formatted(insuranceProduct.getCode(), insuranceProduct.getContractPeriodMin(), contractPeriod));
+        }
+
+        // 기간 최대값 Valid
+        if (insuranceProduct.getContractPeriodMax() < contractPeriod) {
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 최대 기간은 %s 입니다. 요청값: %s".formatted(insuranceProduct.getCode(), insuranceProduct.getContractPeriodMax(), contractPeriod));
+        }
+
+        // 현재 계약 기간 Valid
+        if (requestContract.getContractPeriod() == contractPeriod) {
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "현재 계약기간과 동일합니다. 요청값: %s".formatted(contractPeriod));
         }
 
         requestContract.updatePeriod(contractPeriod);
     }
 
     @Override
-    public void withdrawal(String contractNo, String note) {
+    public void withdrawal(String contractNo, String withdrawalReason) {
         Assert.hasText(contractNo, "contractNo must not be empty.");
         Contract requestContract = getOneByContractNo(contractNo);
         // 수정 상태 확인
@@ -255,7 +270,7 @@ public class ContractServiceImpl implements ContractService {
             throw new ValidationException(ErrorCode.BAD_REQUEST, "청약철회는 '정상 계약' 상태에서 가능합니다.");
         }
 
-        requestContract.withdraw();
+        requestContract.withdraw(withdrawalReason);
 
     }
 
