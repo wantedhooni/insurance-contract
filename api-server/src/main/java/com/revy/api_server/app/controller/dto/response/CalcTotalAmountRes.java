@@ -17,7 +17,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class CalcTotalAmountRes {
+public class CalcTotalAmountRes extends CommonRes {
 
     // 상품 정보
     @JsonProperty("productName")

@@ -1,13 +1,14 @@
 package com.revy.api_server.domain.entity;
 
+import com.revy.api_server.common.constants.CommonConstant;
 import com.revy.api_server.common.enums.ContractStatus;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -59,10 +60,14 @@ public class Contract {
     private BigDecimal totalAmount;
 
     // 계약 일시
-    @Column(name = "contracted", nullable = false)
+    @Column(name = "contracted")
     private LocalDateTime contracted;
 
-    @OneToMany(mappedBy = "contract", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    // 청약 철회 일시
+    @Column(name = "withdrawn")
+    private LocalDateTime withdrawn;
+
+    @OneToMany(mappedBy = "contract", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     // 가입담보 List
     private List<ContractCollateral> contractCollaterals = new ArrayList<>();
 
@@ -79,7 +84,27 @@ public class Contract {
         this.contractCollaterals = contractCollaterals;
     }
 
-    public void setContractCollaterals(List<ContractCollateral> contractCollaterals) {
+    public void updateContractCollaterals(List<ContractCollateral> contractCollaterals) {
         this.contractCollaterals = contractCollaterals;
+    }
+
+
+    public void updateTotalAmount() {
+        this.totalAmount = contractCollaterals.stream()
+                .map(insuranceCollateral -> insuranceCollateral.getSubscriptionAmount().divide(insuranceCollateral.getStandardAmount(), CommonConstant.DEFAULT_SCALE, RoundingMode.DOWN))
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .multiply(new BigDecimal(contractPeriod))
+                .setScale(CommonConstant.DEFAULT_SCALE, RoundingMode.DOWN);
+    }
+
+    public void updatePeriod(Integer contractPeriod) {
+        this.contractPeriod = contractPeriod;
+        this.endDate = startDate.plusMonths(contractPeriod);
+        updateTotalAmount();
+    }
+
+    public void withdraw() {
+        this.status = ContractStatus.WITHDRAWAL;
+        this.withdrawn = LocalDateTime.now();
     }
 }

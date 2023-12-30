@@ -11,4 +11,6 @@ public interface ContractCollateralManager {
 
 
     List<ContractCollateral> saveAll(List<ContractCollateral> contractCollateralList);
+
+    void delete(ContractCollateral contractCollateral);
 }

@@ -1,14 +1,20 @@
 package com.revy.api_server.app.service.impl;
 
 import com.revy.api_server.app.service.ContractService;
-import com.revy.api_server.app.service.dto.*;
+import com.revy.api_server.app.service.dto.CalcTotalAmountParamDto;
+import com.revy.api_server.app.service.dto.CalcTotalAmountResultDto;
+import com.revy.api_server.app.service.dto.ContractCreateParamDto;
+import com.revy.api_server.app.service.dto.ContractResultDto;
+import com.revy.api_server.common.constants.CommonConstant;
 import com.revy.api_server.common.enums.ContractStatus;
 import com.revy.api_server.common.enums.ErrorCode;
 import com.revy.api_server.common.exceptions.NotFoundException;
+import com.revy.api_server.common.exceptions.ValidationException;
 import com.revy.api_server.domain.entity.Contract;
 import com.revy.api_server.domain.entity.ContractCollateral;
 import com.revy.api_server.domain.entity.InsuranceCollateral;
 import com.revy.api_server.domain.entity.InsuranceProduct;
+import com.revy.api_server.domain.service.ContractCollateralManager;
 import com.revy.api_server.domain.service.ContractManager;
 import com.revy.api_server.domain.service.InsuranceProductManager;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -38,6 +45,7 @@ import java.util.stream.Collectors;
 public class ContractServiceImpl implements ContractService {
 
     private final ContractManager contractManager;
+    private final ContractCollateralManager contractCollateralManager;
     private final InsuranceProductManager insuranceProductManager;
 
 
@@ -55,17 +63,7 @@ public class ContractServiceImpl implements ContractService {
                 .orElseThrow(() -> new NotFoundException(ErrorCode.BAD_REQUEST, "[%s] 코드의 상품을 찾을수 없습니다.".formatted(contractCreateParamDto.getProductCode())));
 
         // 담보 코드 Valid
-        Map<String, InsuranceCollateral> insuranceCollateralMap = insuranceProduct.getInsuranceCollateralList().stream().collect(Collectors.toMap(
-                data -> data.getCode(), Function.identity()));
-
-        List<InsuranceCollateral> requestCollateralList = contractCreateParamDto.getCollateralCodes().stream().map(
-                requestCollateralCode -> {
-                    if (!insuranceCollateralMap.containsKey(requestCollateralCode)) {
-                        throw new NotFoundException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 담보코드[%s]를 찾을수 없습니다.".formatted(contractCreateParamDto.getProductCode(), requestCollateralCode));
-                    }
-                    return insuranceCollateralMap.get(requestCollateralCode);
-                }
-        ).toList();
+        List<InsuranceCollateral> requestCollateralList = validAndCollateralList(insuranceProduct.getInsuranceCollateralList(), contractCreateParamDto.getCollateralCodes(), contractCreateParamDto.getProductCode());
 
         // 기간 최소값 Valid
         if (insuranceProduct.getContractPeriodMin() > contractCreateParamDto.getContractPeriod()) {
@@ -88,11 +86,7 @@ public class ContractServiceImpl implements ContractService {
         }
 
         // 총보험료 계산
-        BigDecimal totalAmount = requestCollateralList.stream()
-                .map(insuranceCollateral -> insuranceCollateral.getSubscriptionAmount().divide(insuranceCollateral.getStandardAmount(), 2, RoundingMode.DOWN))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .multiply(new BigDecimal(contractCreateParamDto.getContractPeriod()))
-                .setScale(2, RoundingMode.DOWN);
+        BigDecimal totalAmount = calcContractTotalAmount(requestCollateralList, contractCreateParamDto.getContractPeriod());
         log.debug("totalAmount: {}", totalAmount);
 
         Contract requestContract = createNewContract(insuranceProduct
@@ -106,24 +100,17 @@ public class ContractServiceImpl implements ContractService {
         List<ContractCollateral> requestContractCollateralList = requestCollateralList.stream().map(data ->
                 createNewContractCollateral(requestContract, data)
         ).toList();
-        requestContract.setContractCollaterals(requestContractCollateralList);
+        requestContract.updateContractCollaterals(requestContractCollateralList);
 
         return ContractResultDto.from(requestContract);
     }
-
 
     @Override
     @Transactional(readOnly = true)
     public ContractResultDto retrieveContract(String contractNo) {
-        Contract requestContract = contractManager.findOneByContractNo(contractNo)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.BAD_REQUEST, "[%s] 계약번호의 계약이 존재하지 않습니다.".formatted(contractNo)));
+        Assert.hasText(contractNo, "contractNo must not be empty.");
+        Contract requestContract = getOneByContractNo(contractNo);
         return ContractResultDto.from(requestContract);
-    }
-
-    @Override
-    public ContractModifyResultDto modifyContract(ContractModifyParamDto contractModifyParamDto) {
-
-        return null;
     }
 
     @Override
@@ -141,19 +128,7 @@ public class ContractServiceImpl implements ContractService {
                 .orElseThrow(() -> new NotFoundException(ErrorCode.BAD_REQUEST, "[%s] 코드의 상품을 찾을수 없습니다.".formatted(calcTotalAmountParamDto.getProductCode())));
 
         // 담보 코드 Valid
-        Map<String, InsuranceCollateral> insuranceCollateralMap = insuranceProduct.getInsuranceCollateralList()
-                .stream()
-                .collect(Collectors.toMap(InsuranceCollateral::getCode, Function.identity()));
-
-
-        List<InsuranceCollateral> requestCollateralList = calcTotalAmountParamDto.getCollateralCodes().stream().map(
-                requestCollateralCode -> {
-                    if (!insuranceCollateralMap.containsKey(requestCollateralCode)) {
-                        throw new NotFoundException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 담보코드[%s]를 찾을수 없습니다.".formatted(calcTotalAmountParamDto.getProductCode(), requestCollateralCode));
-                    }
-                    return insuranceCollateralMap.get(requestCollateralCode);
-                }
-        ).toList();
+        List<InsuranceCollateral> requestCollateralList = validAndCollateralList(insuranceProduct.getInsuranceCollateralList(), calcTotalAmountParamDto.getCollateralCodes(), calcTotalAmountParamDto.getProductCode());
 
         // 기간 최소값 Valid
         if (insuranceProduct.getContractPeriodMin() > calcTotalAmountParamDto.getContractPeriod()) {
@@ -176,11 +151,7 @@ public class ContractServiceImpl implements ContractService {
         }
 
         // 총보험료 계산
-        BigDecimal totalAmount = requestCollateralList.stream()
-                .map(insuranceCollateral -> insuranceCollateral.getSubscriptionAmount().divide(insuranceCollateral.getStandardAmount(), 2, RoundingMode.DOWN))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .multiply(new BigDecimal(calcTotalAmountParamDto.getContractPeriod()))
-                .setScale(2, RoundingMode.DOWN);
+        BigDecimal totalAmount = calcContractTotalAmount(requestCollateralList, calcTotalAmountParamDto.getContractPeriod());
         log.debug("totalAmount: {}", totalAmount);
 
         return CalcTotalAmountResultDto.builder()
@@ -194,9 +165,136 @@ public class ContractServiceImpl implements ContractService {
                 .build();
     }
 
+    @Override
+    public void addCollateral(String contractNo, Set<String> collateralCodes) {
+        Assert.hasText(contractNo, "contractNo must be not empty.");
+        Assert.notEmpty(collateralCodes, "collateralCodes must be not empty.");
+
+        Contract requestContract = getOneByContractNo(contractNo);
+
+        // 수정 상태 확인
+        if (requestContract.getStatus() != ContractStatus.NORMAL) {
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "담보 수정은 '정상 계약' 상태에서 가능합니다.");
+        }
+
+        // 필요 데이터 셋팅
+        List<ContractCollateral> contractCollaterals = requestContract.getContractCollaterals();
+        InsuranceProduct insuranceProduct = requestContract.getInsuranceProduct();
+        List<InsuranceCollateral> insuranceCollateralList = insuranceProduct.getInsuranceCollateralList();
+
+        // 요청 담보 계약에 존재 여부 Valid
+        contractCollaterals.stream().forEach(contractCollateral -> {
+            if (collateralCodes.contains(contractCollateral.getInsuranceCollateral().getCode())) {
+                throw new ValidationException(ErrorCode.BAD_REQUEST, "%s 이미 존재하는 담보코드 입니다.".formatted(contractCollateral.getInsuranceCollateral().getCode()));
+            }
+        });
+
+        // 상품 담보와 코드 비교 Valid
+        List<InsuranceCollateral> requestCollateralList = validAndCollateralList(insuranceCollateralList, collateralCodes, insuranceProduct.getCode());
+
+        // 담보 추가
+        requestCollateralList.stream().forEach(insuranceCollateral -> {
+                    contractCollaterals.add(createNewContractCollateral(requestContract, insuranceCollateral));
+                }
+        );
+
+        // 토탈 금액 갱신
+        requestContract.updateTotalAmount();
+
+        // SAVE
+        contractManager.save(requestContract);
+    }
+
+    @Override
+    public void removeCollateral(String contractNo, Set<String> collateralCodes) {
+        Assert.hasText(contractNo, "contractNo must be not empty.");
+        Assert.notEmpty(collateralCodes, "collateralCodes must be not empty.");
+        Contract requestContract = getOneByContractNo(contractNo);
+
+        // 수정 상태 확인
+        if (requestContract.getStatus() != ContractStatus.NORMAL) {
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "담보 수정은 '정상 계약' 상태에서 가능합니다.");
+        }
+
+        // 필요 데이터 셋팅
+        List<ContractCollateral> contractCollaterals = requestContract.getContractCollaterals();
+        contractCollaterals.removeIf(contractCollateral -> collateralCodes.contains(contractCollateral.getInsuranceCollateral().getCode()));
+
+        // 담보가 남아 있는지 확인
+        if (contractCollaterals.isEmpty()) {
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "모든 담보를 제거할 수 없습니다.");
+        }
+
+        // 토탈 금액 갱신
+        requestContract.updateTotalAmount();
+
+        // SAVE
+        contractManager.save(requestContract);
+    }
+
+    @Override
+    public void modifyPeriod(String contractNo, Integer contractPeriod) {
+        Assert.hasText(contractNo, "contractNo must not be empty.");
+        Assert.notNull(contractNo, "contractPeriod must not be empty.");
+        Contract requestContract = getOneByContractNo(contractNo);
+
+        // 수정 상태 확인
+        if (requestContract.getStatus() != ContractStatus.NORMAL) {
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "계약기간 수정은 '정상 계약' 상태에서 가능합니다.");
+        }
+
+        requestContract.updatePeriod(contractPeriod);
+    }
+
+    @Override
+    public void withdrawal(String contractNo, String note) {
+        Assert.hasText(contractNo, "contractNo must not be empty.");
+        Contract requestContract = getOneByContractNo(contractNo);
+        // 수정 상태 확인
+        if (requestContract.getStatus() != ContractStatus.NORMAL) {
+            throw new ValidationException(ErrorCode.BAD_REQUEST, "청약철회는 '정상 계약' 상태에서 가능합니다.");
+        }
+
+        requestContract.withdraw();
+
+    }
+
+
+    private Contract getOneByContractNo(String contractNo) {
+        Assert.hasText(contractNo, "contractNo must not be empty.");
+        return contractManager.findOneByContractNo(contractNo)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.BAD_REQUEST, "[%s] 계약번호의 계약이 존재하지 않습니다.".formatted(contractNo)));
+    }
+
+    private Map<String, InsuranceCollateral> convertInsuranceCollateralMap(List<InsuranceCollateral> insuranceCollateralList) {
+        return insuranceCollateralList
+                .stream()
+                .collect(Collectors.toMap(InsuranceCollateral::getCode, Function.identity()));
+    }
+
+
+    private List<InsuranceCollateral> validAndCollateralList(List<InsuranceCollateral> insuranceCollateralList, Set<String> collateralCodes, String productCode) {
+        Map<String, InsuranceCollateral> insuranceCollateralMap = convertInsuranceCollateralMap(insuranceCollateralList);
+        return collateralCodes.stream().map(
+                requestCollateralCode -> {
+                    if (!insuranceCollateralMap.containsKey(requestCollateralCode)) {
+                        throw new NotFoundException(ErrorCode.BAD_REQUEST, "상품 코드[%s]의 담보코드[%s]를 찾을수 없습니다.".formatted(productCode, requestCollateralCode));
+                    }
+                    return insuranceCollateralMap.get(requestCollateralCode);
+                }
+        ).toList();
+    }
+
+    private BigDecimal calcContractTotalAmount(List<InsuranceCollateral> insuranceCollateralList, Integer contractPeriod) {
+        return insuranceCollateralList.stream()
+                .map(insuranceCollateral -> insuranceCollateral.getSubscriptionAmount().divide(insuranceCollateral.getStandardAmount(), CommonConstant.DEFAULT_SCALE, RoundingMode.DOWN))
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .multiply(new BigDecimal(contractPeriod))
+                .setScale(CommonConstant.DEFAULT_SCALE, RoundingMode.DOWN);
+    }
 
     private Contract createNewContract(InsuranceProduct insuranceProduct, Integer contractPeriod, LocalDate startDate, LocalDate endDate, BigDecimal totalAmount) {
-        String contractNo = "%s_%s".formatted(insuranceProduct.getCode(), UUID.randomUUID().toString());
+        String contractNo = UUID.randomUUID().toString();
         return Contract.builder()
                 .contractNo(contractNo)
                 .status(ContractStatus.NORMAL)
@@ -219,4 +317,6 @@ public class ContractServiceImpl implements ContractService {
                 .standardAmount(insuranceCollateral.getStandardAmount())
                 .build();
     }
+
+
 }

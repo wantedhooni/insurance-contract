@@ -24,4 +24,9 @@ public class ContractCollateralManagerImpl implements ContractCollateralManager 
     public List<ContractCollateral> saveAll(List<ContractCollateral> contractCollateralList) {
         return repository.saveAll(contractCollateralList);
     }
+
+    @Override
+    public void delete(ContractCollateral contractCollateral) {
+        repository.delete(contractCollateral);
+    }
 }

@@ -32,8 +32,16 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler({CommonException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    protected ErrorResponse handleException(Exception e) {
-        log.error("Exception : ", e);
+    protected ErrorResponse handleException(CommonException e) {
+        log.error("CommonException : ", e);
         return ErrorResponse.of(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
     }
+
+    @ExceptionHandler({Exception.class})
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    protected ErrorResponse handleException(Exception e) {
+        log.error("Exception : ", e);
+        return ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
+    }
+
 }

@@ -19,7 +19,7 @@ import java.util.Set;
 @Getter
 @NoArgsConstructor
 @ToString
-public class CreateContractReq {
+public class ContractCreateReq {
 
     // 상품 코드
     @JsonProperty("productCode")

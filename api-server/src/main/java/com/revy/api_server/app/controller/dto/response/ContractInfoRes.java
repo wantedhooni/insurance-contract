@@ -19,7 +19,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class ContractInfoRes {
+public class ContractInfoRes extends CommonRes {
 
     // 상품 정보
     @JsonProperty("productName")

@@ -1,7 +1,6 @@
 package com.revy.api_server.app.controller;
 
-import com.revy.api_server.app.controller.dto.request.CalcTotalAmountReq;
-import com.revy.api_server.app.controller.dto.request.CreateContractReq;
+import com.revy.api_server.app.controller.dto.request.*;
 import com.revy.api_server.app.controller.dto.response.CalcTotalAmountRes;
 import com.revy.api_server.app.controller.dto.response.ContractInfoRes;
 import com.revy.api_server.app.service.ContractService;
@@ -28,13 +27,6 @@ public class ContractController {
 
 3. 계약 정보 수정 API
 
-해당 계약에 대해서 계약내용 변경 업무를 수행합니다.
-총 보험료는 계약 생성시점에 서버에서 계산합니다.
-변경 가능한 정보는 다음과 같습니다.
-- 담보 추가 / 삭제
-- 계약기간 변경(시작일은 변경 불가, 기간만 변경 가능)
-- 계약상태 변경(단, 기간만료 상태에서는 변경 불가)
-
 4. 예상 총 보험료 계약 API
 보험 가입 전 보험료를 미리 산출해 보기 위한 기능입니다.
 상품 / 담보 정보와 계약기간을 통해서 예상되는 보험료를 리턴합니다.
@@ -58,28 +50,88 @@ public class ContractController {
      * 계약 생성 API
      * - 최초 계약 생성시 상태는 정상계약으로 간주합니다.
      * - 총 보험료는 계약 생성시점에 서버에서 계산합니다.
+     *
      * @param req
      * @return
      */
     @PostMapping("/create")
-    public ContractInfoRes createContract(@Valid @RequestBody CreateContractReq req) {
+    public ContractInfoRes createContract(@Valid @RequestBody ContractCreateReq req) {
         ContractResultDto resultDto = contractService.createContract(req.toContractCreateParamDto());
         return ContractInfoRes.from(resultDto);
     }
 
-    // 2. 계약 정보 조회 API
+    /**
+     * 계약 정보 상세 조회 API
+     *
+     * @param contractNo
+     * @return
+     */
     @GetMapping("/{contractNo}")
     public ContractInfoRes retrieveContract(@PathVariable("contractNo") String contractNo) {
         ContractResultDto resultDto = contractService.retrieveContract(contractNo);
         return ContractInfoRes.from(resultDto);
     }
 
+    /**
+     * 계약 정보 수정 API
+     * 해당 계약에 대해서 계약내용 변경 업무를 수행합니다.
+     * 총 보험료는 계약 생성시점에 서버에서 계산합니다.
+     * 변경 가능한 정보는 다음과 같습니다.
+     * - 담보 추가 / 삭제
+     * - 계약기간 변경(시작일은 변경 불가, 기간만 변경 가능)
+     * - 계약상태 변경(단, 기간만료 상태에서는 변경 불가)
+     */
 
-    // 3. 계약 정보 수정 API
-    @PostMapping("/modify")
-    public void modifyContract() {
 
+    /**
+     * 계약 담보 추가
+     */
+    @PostMapping("/{contractNo}/collateral/add")
+    public ContractInfoRes addCollateral(@PathVariable("contractNo") String contractNo,
+                                         @Valid @RequestBody CollateralAddReq req) {
+        contractService.addCollateral(contractNo, req.getCollateralCodes());
+        ContractResultDto resultDto = contractService.retrieveContract(contractNo);
+
+        return ContractInfoRes.from(resultDto);
     }
+
+
+    /**
+     * 계약 담보 제거
+     */
+    @PostMapping("/{contractNo}/collateral/remove")
+    public ContractInfoRes removeCollateral(@PathVariable("contractNo") String contractNo,
+                                            @Valid @RequestBody CollateralRemoveReq req) {
+        contractService.removeCollateral(contractNo, req.getCollateralCodes());
+        ContractResultDto resultDto = contractService.retrieveContract(contractNo);
+        return ContractInfoRes.from(resultDto);
+    }
+
+    /**
+     * 계약기간 변경
+     *
+     * @param contractNo
+     * @return
+     */
+    @PostMapping("/{contractNo}/modify/period")
+    public ContractInfoRes updateContractContractPeriod(@PathVariable("contractNo") String contractNo,
+                                                        @Valid @RequestBody ContractModifyPeriodReq req) {
+        contractService.modifyPeriod(contractNo, req.getContractPeriod());
+        ContractResultDto resultDto = contractService.retrieveContract(contractNo);
+        return ContractInfoRes.from(resultDto);
+    }
+
+    /**
+     * 계약 청약철회
+     */
+    @PostMapping("/{contractNo}/withdrawal")
+    public ContractInfoRes withdrawalContract(@PathVariable("contractNo") String contractNo,
+                                              @Valid @RequestBody ContractWithdrawalReq req) {
+        contractService.withdrawal(contractNo, req.getNote());
+        ContractResultDto resultDto = contractService.retrieveContract(contractNo);
+        return ContractInfoRes.from(resultDto);
+    }
+
 
 }
 
