@@ -14,7 +14,7 @@ import java.math.BigDecimal;
  */
 
 @Entity
-@Table
+@Table(name = "contract_collateral")
 @Getter
 @NoArgsConstructor
 public class ContractCollateral {
@@ -39,10 +39,12 @@ public class ContractCollateral {
     private InsuranceCollateral insuranceCollateral;
 
     @Comment("가입 금액")
+    @Column(name = "subscription_amount", nullable = false, scale = 2)
     private BigDecimal subscriptionAmount;
 
     // 기준 금액
     @Comment("기준 금액")
+    @Column(name = "standard_amount", nullable = false, scale = 2)
     private BigDecimal standardAmount;
 
     @Builder

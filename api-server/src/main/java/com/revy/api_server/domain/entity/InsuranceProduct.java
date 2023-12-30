@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 @Entity
-@Table
+@Table(name = " insurance_product")
 @Getter
 @NoArgsConstructor
 public class InsuranceProduct {
@@ -25,12 +25,12 @@ public class InsuranceProduct {
 
     // 상품코드
     @Comment("상품코드")
-    @Column(name = "code", unique = true, nullable = false)
+    @Column(name = "code", unique = true, nullable = false, length = 50)
     private String code;
 
     // 상품명
     @Comment("상품명")
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
 
     // 최소 계약 기간
