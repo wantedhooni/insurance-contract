@@ -34,7 +34,7 @@ public class ApiExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected ErrorResponse handleException(CommonException e) {
         log.error("CommonException : ", e);
-        return ErrorResponse.of(ErrorCode.BAD_REQUEST.getCode(), e.getMessage());
+        return ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage());
     }
 
     @ExceptionHandler({Exception.class})

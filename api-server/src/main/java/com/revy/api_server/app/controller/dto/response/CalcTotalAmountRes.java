@@ -17,15 +17,13 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class CalcTotalAmountRes extends CommonRes {
+public class CalcTotalAmountRes {
 
-    // 상품 정보
     @JsonProperty("productName")
-    private String productName;
+    private String productName; //  상품명
     @JsonProperty("productCode")
-    private String productCode;
+    private String productCode; // 상품코드
 
-    // 계약정보
     @JsonProperty("contractPeriod")
     private Integer contractPeriod; // 계약기간
     @JsonProperty("totalAmount")
