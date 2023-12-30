@@ -80,6 +80,7 @@ public class CalcTotalAmountRes {
         return CalcTotalAmountRes
                 .builder()
                 .productName(calcTotalAmountResultDto.getProductName())
+                .productCode(calcTotalAmountResultDto.getProductCode())
                 .contractPeriod(calcTotalAmountResultDto.getContractPeriod())
                 .totalAmount(calcTotalAmountResultDto.getTotalAmount())
                 .contractStartDate(calcTotalAmountResultDto.getContractStartDate())

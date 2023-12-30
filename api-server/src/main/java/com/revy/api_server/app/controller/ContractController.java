@@ -6,6 +6,7 @@ import com.revy.api_server.app.controller.dto.response.ContractInfoRes;
 import com.revy.api_server.app.service.ContractService;
 import com.revy.api_server.app.service.dto.CalcTotalAmountResultDto;
 import com.revy.api_server.app.service.dto.ContractResultDto;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ public class ContractController {
      * @return ContractInfoRes
      */
     @PostMapping("/calc")
+    @Operation(description = "예상 총 보험료 계약 API")
     public CalcTotalAmountRes calcContract(@Valid @RequestBody CalcTotalAmountReq req) {
         CalcTotalAmountResultDto resultDto = contractService.calcContract(req.toCalcTotalAmountParamDto());
         return CalcTotalAmountRes.from(resultDto);
@@ -42,6 +44,7 @@ public class ContractController {
      * @return
      */
     @PostMapping("/create")
+    @Operation(description = "계약 생성 API")
     public ContractInfoRes createContract(@Valid @RequestBody ContractCreateReq req) {
         ContractResultDto resultDto = contractService.createContract(req.toContractCreateParamDto());
         return ContractInfoRes.from(resultDto);
@@ -54,6 +57,7 @@ public class ContractController {
      * @return
      */
     @GetMapping("/{contractNo}")
+    @Operation(description = "계약 정보 상세 조회 API")
     public ContractInfoRes retrieveContract(@PathVariable("contractNo") String contractNo) {
         ContractResultDto resultDto = contractService.retrieveContract(contractNo);
         return ContractInfoRes.from(resultDto);
@@ -63,6 +67,7 @@ public class ContractController {
      * 계약 담보 추가 API
      */
     @PostMapping("/{contractNo}/collateral/add")
+    @Operation(description = "계약 담보 추가 API")
     public ContractInfoRes addCollateral(@PathVariable("contractNo") String contractNo,
                                          @Valid @RequestBody CollateralAddReq req) {
         contractService.addCollateral(contractNo, req.getCollateralCodes());
@@ -76,6 +81,7 @@ public class ContractController {
      * 계약 담보 제거 API
      */
     @PostMapping("/{contractNo}/collateral/remove")
+    @Operation(description = "계약 담보 제거 API")
     public ContractInfoRes removeCollateral(@PathVariable("contractNo") String contractNo,
                                             @Valid @RequestBody CollateralRemoveReq req) {
         contractService.removeCollateral(contractNo, req.getCollateralCodes());
@@ -91,6 +97,7 @@ public class ContractController {
      * @return
      */
     @PostMapping("/{contractNo}/modify/period")
+    @Operation(description = "계약기간 변경 API")
     public ContractInfoRes updateContractContractPeriod(@PathVariable("contractNo") String contractNo,
                                                         @Valid @RequestBody ContractModifyPeriodReq req) {
         contractService.modifyPeriod(contractNo, req.getContractPeriod());
@@ -106,13 +113,13 @@ public class ContractController {
      * @return
      */
     @PostMapping("/{contractNo}/withdrawal")
+    @Operation(description = "계약 청약철회 API")
     public ContractInfoRes withdrawalContract(@PathVariable("contractNo") String contractNo,
                                               @Valid @RequestBody ContractWithdrawalReq req) {
         contractService.withdrawal(contractNo, req.getNote());
         ContractResultDto resultDto = contractService.retrieveContract(contractNo);
         return ContractInfoRes.from(resultDto);
     }
-
 
 }
 
