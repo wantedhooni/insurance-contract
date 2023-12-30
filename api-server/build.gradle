@@ -22,8 +22,7 @@ bootJar {
     enabled = true
 }
 
-def querydslDir = "$buildDir/generated"
-
+def querydslDir = "$buildDir/generated/querydsl"
 
 sourceSets {
     main.java.srcDir querydslDir
@@ -32,3 +31,4 @@ sourceSets {
 configurations {
     querydsl.extendsFrom compileClasspath
 }
+
