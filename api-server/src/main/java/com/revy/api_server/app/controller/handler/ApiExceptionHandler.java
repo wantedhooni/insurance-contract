@@ -23,7 +23,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler({BindException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     protected ErrorResponse handleBindException(BindingResult bindingResult) {
-        log.warn("[handleBindException] {}");
+        log.warn("[handleBindException] {}", bindingResult);
         return ErrorResponse.of(
                 ErrorCode.BAD_REQUEST.getCode(),
                 Objects.requireNonNullElse(bindingResult.getFieldError().getDefaultMessage(), ErrorCode.BAD_REQUEST.getDescription())
@@ -32,15 +32,15 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler({CommonException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    protected ErrorResponse handleException(CommonException e) {
-        log.error("CommonException : ", e);
+    protected ErrorResponse handleCommonException(CommonException e) {
+        log.error("[handleCommonException] ", e);
         return ErrorResponse.of(e.getErrorCode().getCode(), e.getMessage());
     }
 
     @ExceptionHandler({Exception.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     protected ErrorResponse handleException(Exception e) {
-        log.error("Exception : ", e);
+        log.error("[handleException] ", e);
         return ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
     }
 
