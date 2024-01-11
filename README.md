@@ -17,27 +17,6 @@
 - QueryDSL
 - Swagger
 
-## 실행 방법
-
----
-````
-# JAVA 21 버전 확인해 주세요.
-git clone https://github.com/kakao-insurance-quiz/20231221-wrh.git
-cd 20231221-wrh
-cd api-server
-gradle bootjar
-java -jar ./build/libs/api-server-0.0.1.jar
-````
-또는
-````
-# JAVA 21 버전 확인해 주세요.
-git clone https://github.com/kakao-insurance-quiz/20231221-wrh.git
-cd 20231221-wrh
-cd api-server
-gradle bootrun
-
-````
-
 ## DB 정보
 
 ---
